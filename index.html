@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Evaluación: Investigación-Acción</title>
+    <style>
+        :root {
+            --primary: #0a192f;
+            --secondary: #112240;
+            --accent: #ffd700;
+            --text-light: #e6f1ff;
+            --gray-card: #333333;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--primary);
+            color: var(--text-light);
+            overflow: hidden;
+        }
+
+        .screen {
+            display: none;
+            height: 100vh;
+            width: 100vw;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        #setup-screen {
+            display: flex;
+        }
+
+        .scoreboard {
+            display: flex;
+            gap: 50px;
+            margin-bottom: 30px;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .team-box {
+            padding: 10px 30px;
+            border-radius: 5px;
+            border: 2px solid transparent;
+            transition: 0.3s;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .team-box.active {
+            border: 2px solid var(--accent);
+            background: rgba(255, 215, 0, 0.1);
+            color: var(--accent);
+            transform: scale(1.05);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            width: 130px;
+            height: 170px;
+            background: linear-gradient(135deg, var(--secondary), #1d3557);
+            border: 2px solid #303c55;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s ease;
+            user-select: none;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .card.played {
+            background: var(--gray-card) !important;
+            color: #666 !important;
+            border-color: #444 !important;
+            cursor: default;
+            transform: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--secondary);
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 650px;
+            width: 90%;
+            border: 1px solid var(--accent);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 8px 0;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid #303c55;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1rem;
+        }
+
+        .option-btn:hover {
+            background: var(--accent);
+            color: black;
+            font-weight: bold;
+        }
+
+        .feedback-img {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 10px;
+            margin: 0 auto 20px auto;
+            border: 2px solid var(--accent);
+            display: block;
+        }
+
+        .btn-action {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            background: transparent;
+            color: var(--accent);
+            border: 2px solid var(--accent);
+            cursor: pointer;
+            transition: 0.3s;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 20px;
+        }
+
+        .btn-action:hover {
+            background: var(--accent);
+            color: black;
+            box-shadow: 0 0 20px var(--accent);
+        }
+
+        /* CINEMÁTICA FINAL */
+        #final-cinematic {
+            background: radial-gradient(circle, #111 0%, #000 100%);
+            display: none;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .credits-container {
+            position: absolute;
+            top: 100%;
+            width: 100%;
+            animation: moveUp 32s linear forwards;
+        }
+
+        @keyframes moveUp {
+            0% {
+                top: 100%;
+            }
+
+            100% {
+                top: -380%;
+            }
+        }
+
+        .credit-section {
+            margin-bottom: 100px;
+            padding: 0 20px;
+        }
+
+        .credit-title {
+            color: var(--accent);
+            font-size: 1.1rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .credit-name {
+            font-size: 2.2rem;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .member-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            max-width: 1100px;
+            margin: 40px auto;
+        }
+
+        .member-photo {
+            width: 150px;
+            height: 180px;
+            object-fit: cover;
+            border: 2px solid var(--accent);
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="setup-screen" class="screen">
+        <h1 style="font-size: 3.5rem; margin-bottom: 10px; color: var(--accent);">INVESTIGACIÓN-ACCIÓN</h1>
+        <p style="letter-spacing: 4px; margin-bottom: 40px;">DINÁMICA DE EVALUACIÓN ACADÉMICA</p>
+        <button class="btn-action" onclick="startGame()">Iniciar Competencia</button>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div class="scoreboard">
+            <div id="team0-box" class="team-box active">GRUPO 1: <span id="score0">0</span> pts</div>
+            <div id="team1-box" class="team-box">GRUPO 2: <span id="score1">0</span> pts</div>
+        </div>
+        <div id="grid" class="grid"></div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div id="modal-body" class="modal-content"></div>
+    </div>
+
+    <div id="final-cinematic" class="screen">
+        <div class="credits-container">
+            <div class="credit-section">
+                <p class="credit-title">Un proyecto de la</p>
+                <p class="credit-name">UNIVERSIDAD GERARDO BARRIOS</p>
+            </div>
+
+            <div class="credit-section">
+                <p class="credit-title">Materia</p>
+                <p class="credit-name">Métodos y Técnicas de Investigación</p>
+                <p style="color: var(--accent)">( SS Grupo: B1SSP01 || Ciclo: 1-2026 )</p>
+            </div>
+
+            <div class="credit-section">
+                <p class="credit-title">Cátedra impartida por</p>
+                <p class="credit-name">Licda. María Elvirena Velásquez Bonilla</p>
+            </div>
+
+            <div class="credit-section">
+                <p class="credit-title">Integrantes del Equipo</p>
+                <div class="member-grid">
+                    <div><img src="img/Alejandra.png" class="member-photo"
+                            onerror="this.src='https://via.placeholder.com/150x180'">
+                        <p>Alejandra María Baires Campos</p>
+                    </div>
+                    <div><img src="img/Jeremias.png" class="member-photo"
+                            onerror="this.src='https://via.placeholder.com/150x180'">
+                        <p>Jeremias Neftaly Fuentes Mendex</p>
+                    </div>
+                    <div><img src="img/Brayan.png" class="member-photo"
+                            onerror="this.src='https://via.placeholder.com/150x180'">
+                        <p>Brayan Adaly Campos Martinez</p>
+                    </div>
+                    <div><img src="img/Yensi.png" class="member-photo"
+                            onerror="this.src='https://via.placeholder.com/150x180'">
+                        <p>Yensi Elizabeth Valladares Ventura</p>
+                    </div>
+                    <div><img src="img/Kevin.png" class="member-photo"
+                            onerror="this.src='https://via.placeholder.com/150x180'">
+                        <p>Kevin Antonio Castro Araujo</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="credit-section">
+                <p class="credit-title">Nivel Académico</p>
+                <p class="credit-name">Ciclo V</p>
+            </div>
+
+            <div class="credit-section" style="margin-top: 150px;">
+                <h1 style="color: var(--accent); font-size: 5rem; letter-spacing: 15px;">FIN</h1>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { q: "¿Cómo se define la investigación-acción de acuerdo con el contenido presentado?", a: ["Como un estudio puramente teórico.", "Como un método que permite analizar problemas reales y aplicar soluciones prácticas.", "Como una técnica de mercado.", "Como un proceso sin participación activa."], correct: 1 },
+            { q: "¿Quién propuso y utilizó por primera vez el término 'investigación-acción' en 1944?", a: ["Sigmund Freud", "Kurt Lewin", "Jean Piaget", "Max Weber"], correct: 1 },
+            { q: "¿Cuál es el propósito fundamental de realizar una investigación-acción en una situación real?", a: ["Generar cambios positivos mediante soluciones prácticas.", "Cumplir con un requisito administrativo.", "Recopilar datos para archivarlos.", "Identificar culpables sin proponer mejoras."], correct: 0 },
+            { q: "Según Kurt Lewin, ¿qué buscaba este enfoque al ligar la ciencia social con la práctica?", a: ["Separar la teoría de la acción.", "Vincular el enfoque experimental con programas de acción.", "Priorizar la economía sobre la comunidad.", "Eliminar la investigación antes de actuar."], correct: 1 },
+            { q: "¿Qué característica principal destaca la relación entre la teoría y la práctica en este método?", a: ["Funcionan por separado.", "Se combinan buscando mejorar una situación de forma práctica.", "La teoría es más importante que el problema.", "La práctica solo se realiza si sobra tiempo."], correct: 1 },
+            { q: "¿Qué fase se establece como el punto de partida en su proyecto de investigación?", a: ["La conclusión final", "El Diagnóstico", "La compra de insumos", "La entrega de títulos"], correct: 1 },
+            { q: "¿Qué problemática específica está diagnosticando el grupo en relación con los estudiantes de primer año?", a: ["Falta de espacios deportivos.", "La brecha entre formación académica y globalización digital.", "La asistencia a clases.", "El costo de la matrícula."], correct: 1 },
+            { q: "¿A través de qué herramienta se está transformando la percepción de los estudiantes en datos?", a: ["Observaciones al azar.", "Encuestas dirigidas a estudiantes de primer año.", "Entrevistas de seguridad.", "Lectura de libros de historia."], correct: 1 },
+            { q: "¿Cuál es el rol de los sujetos (estudiantes) dentro del proceso de investigación-acción?", a: ["Sujetos pasivos sin voz.", "Participantes involucrados para generar cambios prácticos.", "Observadores externos.", "Críticos del sistema educativo."], correct: 1 },
+            { q: "¿Cuál es el objetivo final de analizar la opinión estudiantil sobre nuevas tecnologías?", a: ["Mantener el plan de estudios sin cambios.", "Sentar las bases para una mejora continua acorde al mercado.", "Reducir el uso digital.", "Eliminar materias tecnológicas."], correct: 1 }
+        ];
+
+        const specials = [
+            { type: 'bonus', text: "BONIFICACIÓN ACADÉMICA: El equipo recibe 15 puntos por excelencia en el diagnóstico.", val: 15 },
+            { type: 'penalty', text: "PENALIZACIÓN TÉCNICA: Se restan 5 puntos por falta de rigor metodológico.", val: -5 },
+            { type: 'steal', text: "TRANSFERENCIA DE RECURSOS: El equipo actual extrae 10 puntos del equipo oponente.", val: 10 },
+            { type: 'bonus', text: "INNOVACIÓN DIGITAL: Ganan 10 puntos directos por uso de herramientas TIC.", val: 10 },
+            { type: 'neutral', text: "ZONA DE INVESTIGACIÓN: El turno pasa sin cambios en el puntaje.", val: 0 }
+        ];
+
+        // GESTIÓN DE IMÁGENES SIN REPETICIÓN
+        let victoryPool = [];
+        let defeatPool = [];
+
+        function getNonRepeatingImage(type) {
+            if (type === 'Victoria') {
+                if (victoryPool.length === 0) victoryPool = [1, 2, 3].sort(() => Math.random() - 0.5);
+                return victoryPool.pop();
+            } else {
+                if (defeatPool.length === 0) defeatPool = [1, 2, 3].sort(() => Math.random() - 0.5);
+                return defeatPool.pop();
+            }
+        }
+
+        let gameState = { turn: 0, scores: [0, 0], played: 0, deck: [] };
+
+        function startGame() {
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'flex';
+            const cards = [...questions.map(q => ({ t: 'q', d: q })), ...specials.map(s => ({ t: 's', d: s }))];
+            gameState.deck = cards.sort(() => Math.random() - 0.5);
+            const grid = document.getElementById('grid');
+            gameState.deck.forEach((c, i) => {
+                const d = document.createElement('div');
+                d.className = 'card'; d.id = `c-${i}`; d.innerText = i + 1;
+                d.onclick = () => {
+                    if (d.classList.contains('played')) return;
+                    d.classList.add('played');
+                    c.t === 'q' ? showQuestion(c.d) : showSpecial(c.d);
+                };
+                grid.appendChild(d);
+            });
+        }
+
+        function showQuestion(data) {
+            const m = document.getElementById('modal');
+            const b = document.getElementById('modal-body');
+            m.style.display = 'flex';
+            let h = `<h2 style="color:var(--accent)">EVALUACIÓN DE CONTENIDO</h2><p style="font-size:1.1rem">${data.q}</p><div style="width:100%">`;
+            data.a.forEach((opt, i) => h += `<button class="option-btn" onclick="verify(${i},${data.correct})">${opt}</button>`);
+            h += `</div>`;
+            b.innerHTML = h;
+        }
+
+        function verify(selected, correct) {
+            const isWin = selected === correct;
+            const b = document.getElementById('modal-body');
+            const imgNum = getNonRepeatingImage(isWin ? 'Victoria' : 'Derrota');
+
+            if (isWin) gameState.scores[gameState.turn] += 10;
+
+            b.innerHTML = `
+                <img src="img/${isWin ? 'Victoria' : 'Derrota'}${imgNum}.png" class="feedback-img" 
+                     onerror="this.src='https://via.placeholder.com/400x220/112240/ffd700?text=${isWin ? 'ÉXITO' : 'ERROR'}'}">
+                <h2 style="color: var(--accent)">${isWin ? '¡RESPUESTA CORRECTA!' : 'RESPUESTA INCORRECTA'}</h2>
+                <p style="font-size:1.2rem; margin-bottom: 20px;">${isWin ? 'Excelente. Aplicación metodológica acertada.' : 'No concuerda con la teoría. Revise el diagnóstico.'}</p>
+                <button class="btn-action" style="font-size:1rem" onclick="next()">Continuar</button>
+            `;
+            updateScores();
+        }
+
+        function showSpecial(data) {
+            const m = document.getElementById('modal');
+            const b = document.getElementById('modal-body');
+            m.style.display = 'flex';
+            if (data.type === 'steal') {
+                let opp = gameState.turn === 0 ? 1 : 0;
+                let stolen = Math.min(gameState.scores[opp], 10);
+                gameState.scores[opp] -= stolen;
+                gameState.scores[gameState.turn] += stolen;
+            } else {
+                gameState.scores[gameState.turn] += data.val;
+            }
+            b.innerHTML = `<h2 style="color:var(--accent)">EVENTO DEL SISTEMA</h2><p style="font-size:1.3rem; margin: 30px 0;">${data.text}</p><button class="btn-action" onclick="next()">Aceptar</button>`;
+            updateScores();
+        }
+
+        function next() {
+            document.getElementById('modal').style.display = 'none';
+            gameState.played++;
+            gameState.turn = gameState.turn === 0 ? 1 : 0;
+            if (gameState.played === 15) {
+                document.getElementById('game-screen').style.display = 'none';
+                document.getElementById('final-cinematic').style.display = 'flex';
+            } else {
+                updateScores();
+            }
+        }
+
+        function updateScores() {
+            document.getElementById('score0').innerText = gameState.scores[0];
+            document.getElementById('score1').innerText = gameState.scores[1];
+            document.getElementById('team0-box').className = 'team-box' + (gameState.turn === 0 ? ' active' : '');
+            document.getElementById('team1-box').className = 'team-box' + (gameState.turn === 1 ? ' active' : '');
+        }
+    </script>
+</body>
+
+</html>
